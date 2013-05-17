@@ -5,16 +5,21 @@
 
 var express = require('express')
   , routes = require('./routes')
-  , user = require('./routes/user')
+  , room = require('./routes/room')
   , http = require('http')
   , path = require('path');
 
 var app = express();
 
+GLOBAL.listOfGames = [];
+
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
+app.set('user', {
+    username: null //username
+});
 app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.bodyParser());
@@ -31,7 +36,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.get('/users', user.list);
+app.get('/game', room.game);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
