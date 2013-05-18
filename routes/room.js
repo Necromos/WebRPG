@@ -3,6 +3,10 @@
  * GET room.
  */
 
+exports.roomCreator = function(req, res){
+
+};
+
 exports.game = function(req, res){
     if (GLOBAL.listOfGames.indexOf(req.query['id']) == -1)
         GLOBAL.listOfGames.push(req.query['id']);

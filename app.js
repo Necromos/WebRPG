@@ -7,10 +7,21 @@ var express = require('express')
   , routes = require('./routes')
   , room = require('./routes/room')
   , http = require('http')
-  , path = require('path');
+  , path = require('path')
+  , io = require('socket.io');
 
 var app = express();
 
+/*
+Game object model
+{
+  roomId: int
+  roomPlayers: []
+  roomMapSizeX: int
+  roomMapSizeY: int
+
+ }
+*/
 GLOBAL.listOfGames = [];
 
 // all environments
@@ -38,6 +49,6 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 app.get('/game', room.game);
 
-http.createServer(app).listen(app.get('port'), function(){
+io.listen(http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
-});
+}));
