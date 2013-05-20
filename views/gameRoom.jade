@@ -8,4 +8,12 @@ html
     script(src='/javascripts/urlTaker.js')
     script(src='/javascripts/socket.js')
   body
-    block content
+    h1= title
+      p Welcome to #{title}
+      div
+        b ROOMS
+          #rooms
+        div
+           #conversation
+           input#data(type='text', style='width:200px;')
+           input#datasend(type='button', value='send')
