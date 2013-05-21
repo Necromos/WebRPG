@@ -4,10 +4,11 @@
  */
 
 var express = require('express')
-  , routes = require('./routes')
-  , room = require('./routes/room')
-  , http = require('http')
-  , path = require('path');
+    , routes = require('./routes')
+    , room = require('./routes/room')
+    , http = require('http')
+    , path = require('path')
+    , mongoose = require('mongoose');
 
 var app = express();
 
