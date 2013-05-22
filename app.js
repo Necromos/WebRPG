@@ -7,88 +7,10 @@ var express = require('express')
     , routes = require('./routes')
     , room = require('./routes/room')
     , http = require('http')
-    , path = require('path')
-    , mongoose = require('mongoose')
-    , Schema = mongoose.Schema;
+    , path = require('path');
 
 var app = express();
 
-
-var userSchema = new Schema({
-    _id: Number,
-    username: String,
-    currentHp: Number,
-    maxHp: Number,
-    _room: { type: Number, ref: 'Room'},
-    moveLeft: Number,
-    moveMax: Number,
-    x: Number,
-    y: Number
-});
-var tileSchema = new Schema({
-    _id: Number,
-    background: String,
-    x: Number,
-    y: Number,
-    isVisible: Boolean,
-    movePointCost: Number,
-//    monster: MonsterSchema,
-    _player: { type: Number, ref: 'User' },
-//    item: ItemSchema,
-    moveable: Boolean
-});
-var MapSchema = new Schema({
-    _id: Number,
-    x: Number,
-    y: Number,
-    tiles: [{ type: Number, ref: 'Tile' }]
-});
-var roomSchema = new Schema({
-    _id: Number,
-    roomId: Number,
-    users: [{ type: Number, ref: 'User' }],
-    _admin: { type: Number, ref: 'User' },
-    _mapPack: { type: Number, ref: 'Map' },
-    _currentMove: { type: Number, ref: 'User' }
-});
-
-/*
-
-room = {
-    roomId: int
-    users: [user]
-    admin: user
-    mapPack: map
-    currentMove: user
-}
-user = {
-    username: String
-    currentHP: int
-    maxHP: int
-    roomId: int
-    moveLeft: int
-    moveMax: int
-    isAdmin: bool
-    x: int
-    y: int
-}
-map = {
-    x: int
-    y: int
-    tiles: [tile]
-}
-tile = {
-    background: String/url
-    x: int
-    y: int
-    isVisible: bool
-    movePointCost: int
-    monster: monster/null
-    player: user/null
-    item: item/null
-    moveable: bool
-}
-*/
 GLOBAL.listOfGames = [];
 
 // all environments
