@@ -1,0 +1,38 @@
+footer {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  text-align: center;
+  width: 100%;
+  height: 25px;
+}
+#foot {
+  margin: 0 auto;
+  text-align: left;
+  width: 900px;
+  height: 25px;
+  position: relative;
+}
+#chat {
+  height: 25px;
+  width: 200px;
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  background-color: #ffa4f1;
+}
+#chat #chatHeader {
+  width: 200px;
+  height: 25px;
+}
+#chat #chatBody {
+  width: 200px;
+  height: 150px;
+  background-color: #009900;
+}
+#chat #chatSend {
+  height: 25px;
+  width: 200px;
+  background-color: #131313;
+  border: 0;
+}

@@ -12,5 +12,5 @@ exports.game = function(req, res){
         GLOBAL.listOfGames.push(req.query['id']);
     console.log(req.query['id']);
     console.log(GLOBAL.listOfGames.length);
-    res.render('index', { title: GLOBAL.listOfGames[0] });
+    res.render('gameRoom', { title: GLOBAL.listOfGames[0] });
 };
