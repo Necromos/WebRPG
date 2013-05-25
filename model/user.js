@@ -15,4 +15,4 @@ var userSchema = new Schema({
     y: Number
 });
 
-module.exports = db.model('User', userSchema);
+module.exports.User = db.model('User', userSchema);

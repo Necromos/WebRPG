@@ -7,11 +7,11 @@ var express = require('express')
     , routes = require('./routes')
     , room = require('./routes/room')
     , http = require('http')
-    , path = require('path');
+    , path = require('path')
+    , mongoose = require('mongoose')
+    , models = require('./model/models');
 
 var app = express();
-
-GLOBAL.listOfGames = [];
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -50,11 +50,18 @@ io.sockets.on('connection', function (socket) {
             socket.disconnect();
         }
         else {
-            socket.username = username;
-            socket.room = room;
-            socket.join(socket.room);
-            socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
-            socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', username + ' has connected to this room');
+            models.User.findOne({ username: username}, function(err,user) {
+                if(user == null){
+                    models.User.create({username: username}, function(err){ console.log("wchodzi");});
+                }
+                else {
+                    socket.username = user.username;
+                    socket.room = room;
+                    socket.join(socket.room);
+                    socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
+                    socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', username + ' has connected to this room');
+                }
+            });
         }
     });
 
