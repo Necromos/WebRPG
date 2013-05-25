@@ -44,11 +44,18 @@ server.listen(app.get('port'), function(){
 io.sockets.on('connection', function (socket) {
 
     socket.on('adduser', function(username, room){
-        socket.username = username;
-        socket.room = room;
-        socket.join(socket.room);
-        socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
-        socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', username + ' has connected to this room');
+        var parsedRoomNumber = parseInt(room);
+        if (isNaN(parsedRoomNumber) || parsedRoomNumber < 1){
+            socket.emit('roomnumbererror');
+            socket.disconnect();
+        }
+        else {
+            socket.username = username;
+            socket.room = room;
+            socket.join(socket.room);
+            socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
+            socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', username + ' has connected to this room');
+        }
     });
 
     socket.on('sendchat', function (data) {

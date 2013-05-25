@@ -9,6 +9,10 @@ $(document).ready(function(){
         $('#chatBody').append('<b>'+username + ':</b> ' + data + '<br>');
         $('#chatBody').scrollTop(9999999);
     });
+
+    socket.on('roomnumbererror', function(){
+        //tutaj kod do zaprzestania ładowania itp
+    });
     $('#chatSend').keypress(function(e) {
         if(e.which == 13) {
             var message = $('#chatSend').val();

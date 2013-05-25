@@ -7,7 +7,7 @@ var mapSchema = new Schema({
     _id: Number,
     x: Number,
     y: Number,
-    tiles: [{ type: Number, ref: 'Tile' }]
+    tiles: [{ type: Schema.Types.ObjectId, ref: 'Tile' }]
 });
 
 module.exports = db.model('Map', mapSchema);
