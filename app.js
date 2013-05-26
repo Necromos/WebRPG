@@ -68,8 +68,10 @@ io.sockets.on('connection', function (socket) {
                 else {
                     models.User.findOne({ username: username}, function(err,user) {
                         if(user == null){
-                            models.User.create({username: username}, function(err, user){
-                                connect(user,room.roomId);
+                            models.Counter.increment('user', function(err, result){
+                                models.User.create({username: username, cid: result.next}, function(err, user){
+                                    connect(user,room.roomId);
+                                });
                             });
                         }
                         else {
@@ -103,8 +105,10 @@ io.sockets.on('connection', function (socket) {
         };
         models.User.findOne({ username: adm}, function(err,user) {
             if(user == null){
-                models.User.create({username: adm}, function(err, user){
-                    roomCreate(user,rid);
+                models.Counter.increment('user', function(err, result){
+                    models.User.create({username: adm, cid: result.next}, function(err, user){
+                        roomCreate(user,rid);
+                    });
                 });
             }
             else {

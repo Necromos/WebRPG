@@ -52,3 +52,14 @@ var mapSchema = new Schema({
 });
 
 exports.Map = mongoose.model('Map', mapSchema);
+
+var CounterSchema = new Schema({
+    _id: String,
+    next: {type: Number, default: 1}
+});
+
+CounterSchema.statics.increment = function (counter, callback) {
+    return this.findByIdAndUpdate(counter, { $inc: { next: 1 } }, {new: true, upsert: true, select: {next: 1}}, callback);
+};
+
+exports.Counter = mongoose.model('Counter', CounterSchema);
