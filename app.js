@@ -34,6 +34,7 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/game', room.game);
+app.get('/game/create', room.roomCreator);
 
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
@@ -43,26 +44,73 @@ server.listen(app.get('port'), function(){
 
 io.sockets.on('connection', function (socket) {
 
-    socket.on('adduser', function(username, room){
-        var parsedRoomNumber = parseInt(room);
+    socket.on('adduser', function(username, roomId){
+        var parsedRoomNumber = parseInt(roomId);
+        var connect = function(user, roomId) {
+            socket.user = user;
+            socket.room = roomId;
+            socket.join(socket.room);
+            socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
+            socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', username + ' has connected to this room');
+        };
         if (isNaN(parsedRoomNumber) || parsedRoomNumber < 1){
             socket.emit('roomnumbererror');
             socket.disconnect();
         }
         else {
-            models.User.findOne({ username: username}, function(err,user) {
-                if(user == null){
-                    models.User.create({username: username}, function(err){ console.log("wchodzi");});
+            console.log(roomId);
+            models.Room.findOne({ roomId: roomId }, function(err,room) {
+                if (err) console.log(err);
+                if (room == null){
+                    socket.emit('roomdoesnotexists');
+                    socket.disconnect();
                 }
                 else {
-                    socket.username = user.username;
-                    socket.room = room;
-                    socket.join(socket.room);
-                    socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
-                    socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', username + ' has connected to this room');
+                    models.User.findOne({ username: username}, function(err,user) {
+                        if(user == null){
+                            models.User.create({username: username}, function(err, user){
+                                connect(user,room.roomId);
+                            });
+                        }
+                        else {
+                            connect(user,room.roomId);
+                        }
+                    });
                 }
             });
         }
+    });
+
+    socket.on('addroom', function(adminUsername, roomId){
+        var adm = adminUsername;
+        var rid = roomId;
+        var roomCreate = function(user, roomId){
+            models.Room.findOne({ roomId: roomId }, function(err, room){
+                if(room == null){
+                    models.Room.create({ roomId: rid, _admin: user._id},function(err, room){
+                        if (err){
+                            console.log(err);
+                        }
+                        else {
+                            socket.emit('roomcreated', room.roomId);
+                        }
+                    });
+                }
+                else{
+                    socket.emit('roomexists');
+                }
+            });
+        };
+        models.User.findOne({ username: adm}, function(err,user) {
+            if(user == null){
+                models.User.create({username: adm}, function(err, user){
+                    roomCreate(user,rid);
+                });
+            }
+            else {
+                roomCreate(user,rid);
+            }
+        });
     });
 
     socket.on('sendchat', function (data) {
