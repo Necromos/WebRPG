@@ -11,22 +11,22 @@ html
     script(src='/javascripts/socket.js')
     script(src='/javascripts/chat.js')
   body
-    #content
-        h1= title
-        p Welcome to #{title}
-        div
-          b ROOMS
-            #rooms
-        #main
-            #left.charMoveX
-            #right.charMoveX
-            #top.charMoveY
-            #bottom.charMoveY
-            canvas#mainCanvas
-    footer
-        #foot
-            #chat
-                #chatHeader.down
-                    b CHAT
-                #chatBody
-                input#chatSend(type='text')
+    #popup
+        p Kind sir can you give me you name?
+        input#username(type='text', autocomplete='off')
+        button#submit(type='button') Enter the world!
+    #wrapper
+        #content
+            #main
+                #left.charMoveX
+                #right.charMoveX
+                #top.charMoveY
+                #bottom.charMoveY
+                canvas#mainCanvas
+        footer
+            #foot
+                #chat
+                    #chatHeader.down
+                        b CHAT
+                    #chatBody
+                    input#chatSend(type='text')

@@ -9,7 +9,9 @@ var express = require('express')
     , http = require('http')
     , path = require('path')
     , mongoose = require('mongoose')
-    , models = require('./model/models');
+    , models = require('./model/models')
+    , cookie = require('cookie')
+    , connect = require('connect');
 
 var app = express();
 
@@ -42,9 +44,28 @@ server.listen(app.get('port'), function(){
     console.log('Express server listening on port ' + app.get('port'));
 });
 
+io.set('authorization', function (handshakeData, accept) {
+
+    if (handshakeData.headers.cookie) {
+
+        handshakeData.cookie = cookie.parse(handshakeData.headers.cookie);
+
+        handshakeData.sessionID = connect.utils.parseSignedCookie(handshakeData.cookie['express.sid'], 'secret');
+
+        if (handshakeData.cookie['express.sid'] == handshakeData.sessionID) {
+            return accept('Cookie is invalid.', false);
+        }
+
+    } else {
+        return accept('No cookie transmitted.', false);
+    }
+    accept(null, true);
+});
+
 io.sockets.on('connection', function (socket) {
 
     socket.on('adduser', function(username, roomId){
+        //console.log(socket.handshake.cookie['username']);
         var parsedRoomNumber = parseInt(roomId);
         var connect = function(user, roomId) {
             socket.user = user;
@@ -53,7 +74,7 @@ io.sockets.on('connection', function (socket) {
             socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
             socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', username + ' has connected to this room');
         };
-        if (isNaN(parsedRoomNumber) || parsedRoomNumber < 1){
+        if (username == null || username == "" || isNaN(parsedRoomNumber) || parsedRoomNumber < 1){
             socket.emit('roomnumbererror');
             socket.disconnect();
         }

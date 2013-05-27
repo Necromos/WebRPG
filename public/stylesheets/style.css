@@ -7,6 +7,9 @@ body {
   text-align: center;
   height: 100%;
 }
+#wrapper {
+  display: none;
+}
 #content {
   position: relative;
   margin: 0 auto;
