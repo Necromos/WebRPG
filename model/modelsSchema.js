@@ -6,12 +6,13 @@ mongoose.connect("");
 
 var userSchema = new Schema({
     _id: Number,
+    cid: Number,
     username: String,
-    currentHp: Number,
-    maxHp: Number,
-    _room: { type: Number, ref: 'Room'},
-    moveLeft: Number,
-    moveMax: Number,
+    currentHp: {type: Number, default: 10},
+    maxHp: {type: Number, default: 10},
+    inRoom: Number,
+    moveLeft: { type: Number, default: 2 },
+    moveMax: { type: Number, default: 2 },
     x: Number,
     y: Number
 });
@@ -36,7 +37,6 @@ exports.Tile = mongoose.model('Tile', tileSchema);
 var roomSchema = new Schema({
     _id: Number,
     roomId: Number,
-    users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     _admin: { type: Number, ref: 'User' },
     _mapPack: { type: Number, ref: 'Map' },
     _currentMove: { type: Number, ref: 'User' }
@@ -46,6 +46,7 @@ exports.Room = mongoose.model('Room', roomSchema);
 
 var mapSchema = new Schema({
     _id: Number,
+    mapId: Number,
     x: Number,
     y: Number,
     tiles: [{ type: Schema.Types.ObjectId, ref: 'Tile' }]

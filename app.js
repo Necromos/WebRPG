@@ -58,7 +58,6 @@ io.sockets.on('connection', function (socket) {
             socket.disconnect();
         }
         else {
-            console.log(roomId);
             models.Room.findOne({ roomId: roomId }, function(err,room) {
                 if (err) console.log(err);
                 if (room == null){
@@ -69,12 +68,13 @@ io.sockets.on('connection', function (socket) {
                     models.User.findOne({ username: username}, function(err,user) {
                         if(user == null){
                             models.Counter.increment('user', function(err, result){
-                                models.User.create({username: username, cid: result.next}, function(err, user){
+                                models.User.create({username: username, cid: result.next, inRoom: room.roomId}, function(err, user){
                                     connect(user,room.roomId);
                                 });
                             });
                         }
                         else {
+                            models.User.update({username: username}, {inRoom: room.roomId});
                             connect(user,room.roomId);
                         }
                     });
@@ -89,7 +89,7 @@ io.sockets.on('connection', function (socket) {
         var roomCreate = function(user, roomId){
             models.Room.findOne({ roomId: roomId }, function(err, room){
                 if(room == null){
-                    models.Room.create({ roomId: rid, _admin: user._id},function(err, room){
+                    models.Room.create({ roomId: rid, _admin: user.cid},function(err, room){
                         if (err){
                             console.log(err);
                         }
