@@ -1,0 +1,36 @@
+#main {
+  position: absolute;
+  width: 650px;
+  height: 350px;
+}
+#main #left {
+  left: 0px;
+}
+#main #right {
+  right: 0px;
+}
+#main #top {
+  top: 0px;
+}
+#main #bottom {
+  bottom: 0px;
+}
+#main .charMoveX {
+  position: absolute;
+  top: 25px;
+  height: 300px;
+  width: 25px;
+}
+#main .charMoveY {
+  position: absolute;
+  left: 25px;
+  width: 600px;
+  height: 25px;
+}
+#main #mainCanvas {
+  position: absolute;
+  left: 25px;
+  top: 25px;
+  width: 600px;
+  height: 300px;
+}

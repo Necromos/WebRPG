@@ -4,6 +4,7 @@ html
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
     link(rel='stylesheet', href='/stylesheets/chat.css')
+    link(rel='stylesheet', href='/stylesheets/canvas.css')
     script(src='http://code.jquery.com/jquery-1.9.1.min.js')
     script(src='/socket.io/socket.io.js')
     script(src='/javascripts/urlTaker.js')
@@ -16,6 +17,12 @@ html
         div
           b ROOMS
             #rooms
+        #main
+            #left.charMoveX
+            #right.charMoveX
+            #top.charMoveY
+            #bottom.charMoveY
+            canvas#mainCanvas
     footer
         #foot
             #chat

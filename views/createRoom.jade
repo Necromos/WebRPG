@@ -3,12 +3,18 @@ html
   head
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/stylesheets/roomCreate.css')
     script(src='http://code.jquery.com/jquery-1.9.1.min.js')
     script(src='/socket.io/socket.io.js')
     script(src='/javascripts/socketCreateRoom.js')
   body
-    #content
+    #notification
         p#info
-        input#adminName(type='text')
-        input#roomName(type='text')
+    #content
+        #adm
+            label Admin nick
+                input#adminName(type='text')
+        #rm
+            label Room number
+                input#roomName(type='text')
         button#createButton(type='button') Create!
