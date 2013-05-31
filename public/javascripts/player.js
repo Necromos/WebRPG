@@ -1,0 +1,3 @@
+var Player = Class.extend({
+
+});
