@@ -52,6 +52,7 @@ $(document).ready(function(){
     socket.on('roomnumbererror', function(){
         //tutaj kod do zaprzestania ładowania itp
     });
+
     $('#chatSend').keypress(function(e) {
         if(e.which == 13) {
             var message = $('#chatSend').val();
@@ -61,4 +62,37 @@ $(document).ready(function(){
             $('#chatSend').focus();
         }
     });
+
+    $(document).on('click','#chatHeader.down',function(){
+        $('#chat').animate({bottom:'175px'}, 500);
+        $('#chatHeader').removeClass('down');
+        $('#chatHeader').addClass('up')
+    });
+    $(document).on('click','#chatHeader.up',function(){
+        $('#chat').animate({bottom:'0px'}, 500);
+        $('#chatHeader').removeClass('up');
+        $('#chatHeader').addClass('down');
+    });
+
+    var game = new Game({
+        mapPack: "Sample",
+        tiles: [
+            {
+                "src": "/images/B000M800.BMP"
+            },
+            {
+                "src": "/images/B1S1E800.BMP"
+            },
+            {
+                "src": "/images/B1S1A800.BMP"
+            }
+        ],
+        mapLoc: [
+            [0,2,2,2,1,0],
+            [0,0,0,0,0,0],
+            [0,0,0,0,0,0],
+            [0,2,2,2,1,0]
+        ]
+    });
+    game.start();
 });

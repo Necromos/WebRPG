@@ -63,41 +63,30 @@
     };
 })();
 
+/*
+    Game declaration start
+
+ */
+
 var Map = Class.extend({
 
-    json: {},
+    json: null,
     images: [],
     map: [],
-    canvas: null,
     ctx: null,
     loaded: false,
     c: 0,
     tileArrayLength: 0,
+    x: 0,
+    y: 0,
+    maxX: 0,
+    maxY: 0,
 
-    init: function(){
-        this.canvas = $('#mainCanvas')[0];
-        this.canvas.width = 640;
-        this.canvas.height = 384;
-        this.ctx = this.canvas.getContext('2d');
-        this.json = {
-            mapPack: "Sample",
-            tiles: [
-                {
-                    "src": "/images/B000M800.BMP"
-                },
-                {
-                    "src": "/images/B1S1E800.BMP"
-                },
-                {
-                    "src": "/images/B1S1A800.BMP"
-                }
-            ],
-            mapLoc: [
-                [0,2,2,2,1,0],
-                [0,0,0,0,0,0],
-                [0,0,0,0,0,0]
-            ]
-        };
+    init: function(canvasContext,mapDocument){
+        this.ctx = canvasContext;
+        this.json = mapDocument;
+        this.maxY = this.json.mapLoc.length;
+        this.maxX = this.json.mapLoc[0].length;
         this.tileArrayLength = this.json.tiles.length;
         this.tiles = this.loadImages(this.json.tiles);
         this.map = this.json.mapLoc;
@@ -109,6 +98,7 @@ var Map = Class.extend({
         };
         var that = this;
         var interval = setInterval(function(){checkStatus(that)}, 1000);
+        return this;
     },
 
     loadImages: function(tileArray){
@@ -130,8 +120,8 @@ var Map = Class.extend({
 
     drawMap: function(x,y){
         var locX = 0, locY = 0;
-        for (var i = x; i<x+3;i++){
-            for(var j = y; j<y+5;j++){
+        for (var i = y; i<y+3;i++){
+            for(var j = x; j<x+5;j++){
                 this.ctx.drawImage(this.images[this.map[i][j]],locX,locY);
                 locX+=128;
             }
@@ -140,8 +130,49 @@ var Map = Class.extend({
         }
     },
 
-    redrawMap: function(){
-
+    redrawMap: function(x,y){
+        if(x == -1 && this.x == 0 || x == 1 && this.x == this.maxX-5 || y == 1 && this.y == 0 || y == -1 && this.y == this.maxY-3)
+            return;
+        this.x+=x;
+        this.y-=y;
+        this.drawMap(this.x,this.y);
     }
 
+});
+
+var Player = Class.extend({
+    x: 0,
+    y: 0
+});
+
+var Game = Class.extend({
+    canvas: null,
+    ctx: null,
+    map: null,
+    player: null,
+    init: function(mapDocument){
+        this.canvas = $('#mainCanvas')[0];
+        this.canvas.width = 640;
+        this.canvas.height = 384;
+        this.ctx = this.canvas.getContext('2d');
+        this.map = new Map(this.ctx,mapDocument);
+    },
+    listen: function(){
+        var that = this;
+        $('#left').click(function(){
+            that.map.redrawMap(-1,0);
+        });
+        $('#right').click(function(){
+            that.map.redrawMap(1,0);
+        });
+        $('#top').click(function(){
+            that.map.redrawMap(0,1);
+        });
+        $('#bottom').click(function(){
+            that.map.redrawMap(0,-1);
+        });
+    },
+    start: function(){
+        this.listen();
+    }
 });

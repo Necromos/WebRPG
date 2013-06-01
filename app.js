@@ -99,19 +99,6 @@ io.sockets.on('connection', function (socket) {
                             });
                         }
                     }
-//                    models.User.findOne({ username: username}, function(err,user) {
-//                        if(user == null){
-//                            models.Counter.increment('user', function(err, result){
-//                                models.User.create({username: username, cid: result.next, inRoom: room.roomId}, function(err, user){
-//                                    connect(user,room.roomId);
-//                                });
-//                            });
-//                        }
-//                        else {
-//                            models.User.update({username: username}, {inRoom: room.roomId});
-//                            connect(user,room.roomId);
-//                        }
-//                    });
                 }
             });
         }
@@ -128,48 +115,10 @@ io.sockets.on('connection', function (socket) {
                     socket.emit('roomcreated', room.roomId);
                 });
             }
-//            .create({ roomId: rid , $push: {users: {username: adminUsername}}},function(err, room){
-//                    if (err){
-//                        console.log(err);
-//                    }
-//                    else {
-//                        socket.emit('roomcreated', room.roomId);
-//                    }
-//                });
-//            }
             else{
                 socket.emit('roomexists');
             }
         });
-//        var roomCreate = function(user, roomId){
-//            models.Room.findOne({ roomId: roomId }, function(err, room){
-//                if(room == null){
-//                    models.Room.create({ roomId: rid },function(err, room){
-//                        if (err){
-//                            console.log(err);
-//                        }
-//                        else {
-//                            socket.emit('roomcreated', room.roomId);
-//                        }
-//                    });
-//                }
-//                else{
-//                    socket.emit('roomexists');
-//                }
-//            });
-//        };
-//        models.User.findOne({ username: adm}, function(err,user) {
-//            if(user == null){
-//                models.Counter.increment('user', function(err, result){
-//                    models.User.create({username: adm, cid: result.next}, function(err, user){
-//                        roomCreate(user,rid);
-//                    });
-//                });
-//            }
-//            else {
-//                roomCreate(user,rid);
-//            }
-//        });
     });
 
     socket.on('sendchat', function (data) {

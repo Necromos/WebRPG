@@ -1,7 +1,7 @@
 #main {
   position: absolute;
-  width: 650px;
-  height: 350px;
+  width: 690px;
+  height: 434px;
   margin: 0 auto;
 }
 #main #left {
@@ -19,21 +19,21 @@
 #main .charMoveX {
   position: absolute;
   top: 25px;
-  height: 300px;
+  height: 384px;
   width: 25px;
 }
 #main .charMoveY {
   position: absolute;
   left: 25px;
-  width: 600px;
+  width: 640px;
   height: 25px;
 }
 #main #mainCanvas {
   position: absolute;
   left: 25px;
   top: 25px;
-  width: 600px;
-  height: 300px;
+  width: 640px;
+  height: 384px;
 }
 #popup {
   width: 200px;

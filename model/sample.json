@@ -1,0 +1,19 @@
+{
+    "mapPack": "Sample",
+    "tiles": [
+        {
+            "src": "/images/B000M800.BMP"
+        },
+        {
+            "src": "/images/B1S1E800.BMP"
+        },
+        {
+            "src": "/images/B1S1A800.BMP"
+        }
+    ],
+    "mapLoc": [
+        [0,2,2,2,1,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0]
+    ]
+}
