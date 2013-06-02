@@ -69,13 +69,22 @@ io.sockets.on('connection', function (socket) {
     socket.on('adduser', function(username, roomId){
         //console.log(socket.handshake.cookie['username']);
         var parsedRoomNumber = parseInt(roomId);
-        var connect = function(user, room) {
+        var connect = function(id, user, room) {
             socket.user = user;
             socket.room = room.roomId;
             socket.join(socket.room);
-            socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
-            socket.emit('mappack', room.mapPack);
-            socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', user.username + ' has connected to this room');
+            socket.emit('mappack', room.mapPack,user.isAdmin,room.users.length,id);
+            if (user.isAdmin){
+                socket.broadcast.to(socket.room).emit('updatechat', 'ADMIN ' + user.username,' has connected to this room');
+                socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
+            }
+            else {
+                if(!user.isPlaced && !user.isAdmin){
+                    socket.broadcast.to(socket.room).emit('userToPlace',id,user.username);
+                }
+                socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
+                socket.broadcast.to(socket.room).emit('updatechat',  user.username,' has connected to this room');
+            }
         };
         if (username == null || username == "" || isNaN(parsedRoomNumber) || parsedRoomNumber < 1){
             socket.emit('roomnumbererror');
@@ -91,12 +100,12 @@ io.sockets.on('connection', function (socket) {
                 else {
                     for(var i = 0;i<room.users.length;i++){
                         if(typeof(room.users[i].username) != undefined && room.users[i].username == username){
-                            connect(room.users[i], room);
+                            connect(i, room.users[i], room);
                             break;
                         }
                         if(i==room.users.length-1){
-                            models.Room.findOneAndUpdate({roomId: roomId},{$push: {users: {username: username}}},function(err, room){
-                                connect(room.users[i], room.roomId);
+                            models.Room.findOneAndUpdate({roomId: roomId},{$push: {"users.username": username}},function(err, room){
+                                connect(i, room.users[i], room);
                             });
                         }
                     }
@@ -106,6 +115,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('addroom', function(adminUsername, roomId){
+        socket.created = true;
         models.Room.findOne({ roomId: roomId }, function(err, room){
             if(room == null){
                 var room = new models.Room();
@@ -127,7 +137,6 @@ io.sockets.on('connection', function (socket) {
                         console.log(err);
                     }
                     else {
-                        socket.created = true;
                         socket.emit('roomcreated', room.roomId);
                     }
                 });
@@ -138,8 +147,13 @@ io.sockets.on('connection', function (socket) {
         });
     });
 
-    socket.on('placePlayer', function(x,y,pid){
-        socket.broadcast.to(socket.room).emit('newPlayer', x,y,pid);
+    socket.on('adminAddNewPlayer', function(data,id){
+        models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": data}},function(err){if(err)console.log(err);});
+        socket.broadcast.to(socket.room).emit('adminNewPlayerAdded', data, id);
+    });
+
+    socket.on('changePlayerPos', function(pm){
+        socket.broadcast.to(socket.room).emit('playerLocUpdate', pm);
     });
 
     socket.on('updatedPlayersLocation', function(playerMap){

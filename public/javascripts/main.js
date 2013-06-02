@@ -1,6 +1,9 @@
 var socket = io.connect('http://localhost:3000');
 
 $(document).ready(function(){
+    var game;
+    var id = urlTaker('id');
+
     var createCookie = function (name,value,days) {
         if (days) {
             var date = new Date();
@@ -21,7 +24,7 @@ $(document).ready(function(){
         }
         return null;
     }
-
+// Socket listeners
     socket.on('connect', function(){
         var username = readCookie("username");
         if (username == null){
@@ -30,19 +33,9 @@ $(document).ready(function(){
         }
         else {
             $('#wrapper').fadeIn("fast");
-            socket.emit('adduser', username, urlTaker('id'));
+            socket.emit('adduser', username, id);
         }
     });
-    var send = function(){
-        // tutaj logika sprawdzająca poprawność
-        createCookie("username",$("#username").val(),30);
-        socket.emit('adduser', $('#username').val(), urlTaker('id'));
-        $('#popup').fadeOut("slow");
-        $('#wrapper').fadeIn("slow");
-    };
-    $('#submit').click(send);
-    $('#username').keypress(function(e){ if(e.which == 13) send(); });
-
 
     socket.on('updatechat', function (username, data) {
         $('#chatBody').append('<b>'+username + ':</b> ' + data + '<br>');
@@ -51,6 +44,44 @@ $(document).ready(function(){
 
     socket.on('roomnumbererror', function(){
         //tutaj kod do zaprzestania ładowania itp
+    });
+
+
+    socket.on('mappack', function(mapPack,isAdmin,usersLength,id){
+        game = new Game(mapPack,isAdmin,usersLength,id);
+        game.start();
+        if(game.playersLoc == null)
+            game.makePlayersMap();
+    });
+
+    socket.on('userToPlace', function(id,username){
+        var np = $('<div>').attr('id', id).attr('class','newPlayer').css('height','50px');
+        $('<input>').attr('id','x'+id).attr('type','text').attr('class','x').css('width','50px').appendTo(np);
+        $('<input>').attr('id','y'+id).attr('type','text').attr('class','y').css('width','50px').appendTo(np);
+        $('<button>').attr('id','s'+id).attr('type','button').attr('class','s').css('width','50px').text(username).appendTo(np);
+        np.appendTo('#adminWrapper');
+    });
+
+    socket.on('playerLocUpdate', function(data){
+        game.playersLoc = data;
+        game.redrawPlayers(0,0);
+    });
+
+    socket.on('adminNewPlayerAdded', function(data,id){
+        if (!game.adm){
+            game.players.push(new Player(id));
+            game.playersLoc = data;
+            game.redrawPlayers(0,0);
+        }
+        else
+            game.redrawPlayers(0,0);
+    });
+
+    $(document).on('click','.s',function(){
+        var id = $(this).parent().attr('id');
+        socket.emit('adminAddNewPlayer',game.adminAddNewPlayer(id,$('#x'+id).val(),$('#y'+id).val()),id);
+        game.redrawPlayers(0,0);
+        $('#'+id).remove();
     });
 
     $('#chatSend').keypress(function(e) {
@@ -73,10 +104,16 @@ $(document).ready(function(){
         $('#chatHeader').removeClass('up');
         $('#chatHeader').addClass('down');
     });
-    var game;
-    socket.on('mappack', function(mapPack){
-        console.log(mapPack);
-        game = new Game(mapPack);
-        game.start();
-    });
+
+
+    var send = function(){
+        // tutaj logika sprawdzająca poprawność
+        createCookie("username",$("#username").val(),30);
+        socket.emit('adduser', $('#username').val(), id);
+        $('#popup').fadeOut("slow");
+        $('#wrapper').fadeIn("slow");
+    };
+    $('#submit').click(send);
+    $('#username').keypress(function(e){ if(e.which == 13) send(); });
+
 });
