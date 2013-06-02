@@ -73,26 +73,10 @@ $(document).ready(function(){
         $('#chatHeader').removeClass('up');
         $('#chatHeader').addClass('down');
     });
-
-    var game = new Game({
-        mapPack: "Sample",
-        tiles: [
-            {
-                "src": "/images/B000M800.BMP"
-            },
-            {
-                "src": "/images/B1S1E800.BMP"
-            },
-            {
-                "src": "/images/B1S1A800.BMP"
-            }
-        ],
-        mapLoc: [
-            [0,2,2,2,1,0],
-            [0,0,0,0,0,0],
-            [0,0,0,0,0,0],
-            [0,2,2,2,1,0]
-        ]
+    var game;
+    socket.on('mappack', function(mapPack){
+        console.log(mapPack);
+        game = new Game(mapPack);
+        game.start();
     });
-    game.start();
 });

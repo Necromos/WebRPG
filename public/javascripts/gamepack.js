@@ -73,6 +73,7 @@ var Map = Class.extend({
     json: null,
     images: [],
     map: [],
+    movableMap: [],
     ctx: null,
     loaded: false,
     c: 0,
@@ -93,6 +94,7 @@ var Map = Class.extend({
         var checkStatus = function(that){
             if(that.loaded){
                 that.drawMap(0,0);
+                that.makeMovableMap();
                 clearInterval(interval);
             }
         };
@@ -114,15 +116,27 @@ var Map = Class.extend({
                 }
             }(this));
             img.src = tileArray[i].src;
-            this.images.push(img);
+            this.images.push({image: img, movable: tileArray[i].movable});
         }
+    },
+
+    makeMovableMap: function(){
+        var a = [], b = [];
+        for (var i = 0; i< this.maxY; i++){
+            for (var j = 0; j < this.maxX; j++){
+                b.push(this.images[this.map[i][j]].movable);
+            }
+            a.push(b);
+            b=[];
+        }
+        this.movableMap = a;
     },
 
     drawMap: function(x,y){
         var locX = 0, locY = 0;
         for (var i = y; i<y+3;i++){
             for(var j = x; j<x+5;j++){
-                this.ctx.drawImage(this.images[this.map[i][j]],locX,locY);
+                this.ctx.drawImage(this.images[this.map[i][j]].image,locX,locY);
                 locX+=128;
             }
             locY+=128
@@ -142,7 +156,13 @@ var Map = Class.extend({
 
 var Player = Class.extend({
     x: 0,
-    y: 0
+    y: 0,
+    init: function(){
+
+    },
+    listen: function(){
+
+    }
 });
 
 var Game = Class.extend({
@@ -170,6 +190,10 @@ var Game = Class.extend({
         });
         $('#bottom').click(function(){
             that.map.redrawMap(0,-1);
+        });
+        $('#mainCanvas').click(function(e){
+            var x = Math.floor((e.pageX - $(this).offset().left)/128);
+            var y = Math.floor((e.pageY - $(this).offset().top)/128);
         });
     },
     start: function(){

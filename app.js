@@ -69,11 +69,12 @@ io.sockets.on('connection', function (socket) {
     socket.on('adduser', function(username, roomId){
         //console.log(socket.handshake.cookie['username']);
         var parsedRoomNumber = parseInt(roomId);
-        var connect = function(user, roomId) {
+        var connect = function(user, room) {
             socket.user = user;
-            socket.room = roomId;
+            socket.room = room.roomId;
             socket.join(socket.room);
             socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
+            socket.emit('mappack', room.mapPack);
             socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', user.username + ' has connected to this room');
         };
         if (username == null || username == "" || isNaN(parsedRoomNumber) || parsedRoomNumber < 1){
@@ -90,7 +91,7 @@ io.sockets.on('connection', function (socket) {
                 else {
                     for(var i = 0;i<room.users.length;i++){
                         if(typeof(room.users[i].username) != undefined && room.users[i].username == username){
-                            connect(room.users[i], room.roomId);
+                            connect(room.users[i], room);
                             break;
                         }
                         if(i==room.users.length-1){
@@ -105,14 +106,30 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('addroom', function(adminUsername, roomId){
-        var rid = roomId;
         models.Room.findOne({ roomId: roomId }, function(err, room){
             if(room == null){
                 var room = new models.Room();
-                room.roomId = rid;
-                room.users.push({username: adminUsername});
+                room.roomId = roomId;
+                room.users.push({username: adminUsername, isAdmin: true});
+                room.mapPack.mapPack = "Sample";
+                room.mapPack.tiles.push({src: "/images/B000M800.BMP", movable: true});
+                room.mapPack.tiles.push({src: "/images/B1S1E800.BMP", movable: true});
+                room.mapPack.tiles.push({src: "/images/B1S1A800.BMP", movable: true});
+                room.mapPack.objects = [];
+                room.mapPack.objLoc = [];
+                room.mapPack.mapLoc.push([0,2,2,2,1,0]);
+                room.mapPack.mapLoc.push([0,0,0,0,0,0]);
+                room.mapPack.mapLoc.push([0,0,0,0,0,0]);
+                room.mapPack.mapLoc.push([0,2,2,2,1,0]);
+                room.mapPack.playersLoc = [];
                 room.save(function(err,room){
-                    socket.emit('roomcreated', room.roomId);
+                    if (err){
+                        console.log(err);
+                    }
+                    else {
+                        socket.created = true;
+                        socket.emit('roomcreated', room.roomId);
+                    }
                 });
             }
             else{
@@ -121,12 +138,25 @@ io.sockets.on('connection', function (socket) {
         });
     });
 
+    socket.on('placePlayer', function(x,y,pid){
+        socket.broadcast.to(socket.room).emit('newPlayer', x,y,pid);
+    });
+
+    socket.on('updatedPlayersLocation', function(playerMap){
+        socket.broadcast.to(socket.room).emit('updatePlayersLocation', playerMap);
+    });
+
     socket.on('sendchat', function (data) {
         io.sockets.in(socket.room).emit('updatechat', socket.user.username, data);
     });
 
     socket.on('disconnect', function(){
-        socket.broadcast.emit('updatechat', 'SERVER', socket.user.username + ' has disconnected');
-        socket.leave(socket.room);
+        if (!socket.created){
+            socket.broadcast.emit('updatechat', 'SERVER', socket.user.username + ' has disconnected');
+            socket.leave(socket.room);
+        }
+        else {
+            socket.created = false;
+        }
     });
 });

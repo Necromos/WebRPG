@@ -28,6 +28,13 @@
   width: 640px;
   height: 25px;
 }
+#main #gameWrapper {
+  position: absolute;
+  width: 690px;
+  height: 434px;
+  top: 0px;
+  left: 0px;
+}
 #main #mainCanvas {
   position: absolute;
   left: 25px;
