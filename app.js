@@ -165,6 +165,10 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.to(socket.room).emit('playerLocUpdate', pm);
     });
 
+    socket.on('givePlayerMove', function(id,moves){
+
+    });
+
 //    socket.on('updatedPlayersLocation', function(playerMap){
 //        models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": playerMap}},function(err){if(err)console.log(err);});
 //        socket.broadcast.to(socket.room).emit('updatePlayersLocation', playerMap);

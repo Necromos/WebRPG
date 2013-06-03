@@ -183,7 +183,8 @@ var Game = Class.extend({
     x: 0,
     y: 0,
     uid: null,
-    moves: 2,
+    moves: 0,
+    isTurn: false,
 
     init: function(mapDocument,isAdmin,id){
         this.canvas = $('#mainCanvas')[0];
@@ -240,11 +241,12 @@ var Game = Class.extend({
     },
 
     movePlayer: function(x,y){
-        if(x == -1 && this.x == 0 || x == 1 && this.x == this.map.maxX-5 || y == 1 && this.y == 0 || y == -1 && this.y == this.map.maxY-3)
-            return;
-        var curX = this.players[this.uid].x;
-        var curY = this.players[this.uid].y;
-
+        this.playersLoc[this.players[this.uid].y][this.players[this.uid].x] = 0;
+        this.players[this.uid].x = x;
+        this.players[this.uid].y = y;
+        this.playersLoc[y][x] = 1;
+        this.redrawPlayers(0,0);
+        this.moves--;
     },
 
     drawPlayers: function(x,y){
@@ -294,15 +296,34 @@ var Game = Class.extend({
             that.map.redrawMap(0,-1);
             that.redrawPlayers(0,-1);
         });
-        $('#mainCanvas').click(function(e){
-            var x = Math.floor((e.pageX - $(this).offset().left)/128);
-            var y = Math.floor((e.pageY - $(this).offset().top)/128);
+        var x;
+        var y;
+        $('#playerCanvas').click(function(e){
+            x = Math.floor((e.pageX - $(this).offset().left)/128);
+            y = Math.floor((e.pageY - $(this).offset().top)/128);
             $('#pop').remove();
             $('<div>').attr('id','pop').css('z-index',10000).css('background-color','white').css('position','absolute').css('left',e.pageX - $(this).offset().left).css('top',e.pageY - $(this).offset().top).appendTo("#gameWrapper");
+            if (that.checkPlayerInTile(x,y))
+                $('<div>').attr('id','move').css('width','200px').text("Move here").appendTo('#pop');
+
         });
-
-
+        $(document).on('click','#move',function(e){
+            that.movePlayer(x,y);
+        });
     },
+
+    checkPlayerInTile: function(x,y){
+        var pl = this.players[this.uid];
+        var tmpX = this.x+x;
+        var tmpY = this.y+y;
+        if (this.moves != 0 && this.map.movableMap[tmpY][tmpX] && this.playersLoc[tmpY][tmpX] ==  0 && (((tmpX+tmpY)-(pl.x+pl.y)) == -1 || ((tmpX+tmpY)-(pl.x+pl.y)) == 1) ) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+
     start: function(){
         this.listen();
         //this.drawPlayers(0,0);
