@@ -161,9 +161,12 @@ var Entities = Class.extend({
 
 var Player = Class.extend({
     id: null,
-    init: function(id){
+    x: null,
+    y: null,
+    init: function(id,x,y){
         this.id = id;
-
+        this.x = x;
+        this.y = y;
     }
 });
 
@@ -180,8 +183,9 @@ var Game = Class.extend({
     x: 0,
     y: 0,
     uid: null,
+    moves: 2,
 
-    init: function(mapDocument,isAdmin,usersLength,id){
+    init: function(mapDocument,isAdmin,id){
         this.canvas = $('#mainCanvas')[0];
         this.canvas.width = 640;
         this.canvas.height = 384;
@@ -196,9 +200,6 @@ var Game = Class.extend({
         this.adm = isAdmin;
         this.uid = id;
         this.playersLoc = mapDocument.playersLoc;
-        for (var i = 0;i<usersLength;i++){
-            this.players.push(new Player(i));
-        }
         var that = this;
         this.img.onload = function(){
             that.drawPlayers(0,0);
@@ -206,21 +207,44 @@ var Game = Class.extend({
         this.img.src = "/images/char.png";
         return this;
     },
-    makePlayersMap: function () {
+
+    makeLocalPlayers: function(users){
+        for(var i = 0;i<users.length;i++){
+            this.players.push(new Player(i,users[i].x, users[i].y));
+        }
+    },
+
+    makePlayersMap: function (socket) {
         var tmpA = [], tmpB = [];
         for(var i = 0;i<this.map.maxY;i++){
             for(var j = 0;j<this.map.maxX;j++){
-                tmpB.push(-1);
+                tmpB.push(0);
             }
             tmpA.push(tmpB);
             tmpB = [];
         }
         this.playersLoc = tmpA;
+        socket.emit('updatedPlayersLocation',this.playersLoc);
     },
 
     adminAddNewPlayer: function(id,x,y) {
-        this.playersLoc[y][x] = id;
-        return this.playersLoc;
+        if (this.playersLoc[y][x] == 0){
+            this.playersLoc[y][x] = id;
+            this.players.push(new Player(id,x,y));
+            this.redrawPlayers(0,0);
+            return true
+        }
+        else {
+            return false
+        }
+    },
+
+    movePlayer: function(x,y){
+        if(x == -1 && this.x == 0 || x == 1 && this.x == this.map.maxX-5 || y == 1 && this.y == 0 || y == -1 && this.y == this.map.maxY-3)
+            return;
+        var curX = this.players[this.uid].x;
+        var curY = this.players[this.uid].y;
+
     },
 
     drawPlayers: function(x,y){

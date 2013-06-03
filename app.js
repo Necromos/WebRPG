@@ -73,7 +73,8 @@ io.sockets.on('connection', function (socket) {
             socket.user = user;
             socket.room = room.roomId;
             socket.join(socket.room);
-            socket.emit('mappack', room.mapPack,user.isAdmin,room.users.length,id);
+            socket.emit('mappack', room.mapPack,user.isAdmin,id);
+            socket.emit('makeCurrentUsers',room.users);
             if (user.isAdmin){
                 socket.broadcast.to(socket.room).emit('updatechat', 'ADMIN ' + user.username,' has connected to this room');
                 socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
@@ -104,8 +105,13 @@ io.sockets.on('connection', function (socket) {
                             break;
                         }
                         if(i==room.users.length-1){
-                            models.Room.findOneAndUpdate({roomId: roomId},{$push: {"users.username": username}},function(err, room){
-                                connect(i, room.users[i], room);
+                            models.Room.findOneAndUpdate({roomId: roomId},{$push: {users: {username: username}}},function(err, room){
+                                if(err){
+                                    console.log(err);
+                                }
+                                else{
+                                    connect(i, room.users[i], room);
+                                }
                             });
                         }
                     }
@@ -147,18 +153,22 @@ io.sockets.on('connection', function (socket) {
         });
     });
 
-    socket.on('adminAddNewPlayer', function(data,id){
-        models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": data}},function(err){if(err)console.log(err);});
-        socket.broadcast.to(socket.room).emit('adminNewPlayerAdded', data, id);
+    socket.on('adminAddNewPlayer', function(data,id,x,y){
+        var query = {};
+        query["users."+id.toString()] = {x: x, y: y, isPlaced: true};
+        models.Room.findOneAndUpdate({roomId: socket.room}, {$unset: {"mapPack.playersLoc": []}, $set: query},function(err,a){if(err)console.log(err);console.log(a);});
+        models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": data}},{upsert: true}, function(err){if(err) console.log(err);});
+        socket.broadcast.to(socket.room).emit('adminNewPlayerAdded', data, id, x, y);
     });
 
     socket.on('changePlayerPos', function(pm){
         socket.broadcast.to(socket.room).emit('playerLocUpdate', pm);
     });
 
-    socket.on('updatedPlayersLocation', function(playerMap){
-        socket.broadcast.to(socket.room).emit('updatePlayersLocation', playerMap);
-    });
+//    socket.on('updatedPlayersLocation', function(playerMap){
+//        models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": playerMap}},function(err){if(err)console.log(err);});
+//        socket.broadcast.to(socket.room).emit('updatePlayersLocation', playerMap);
+//    });
 
     socket.on('sendchat', function (data) {
         io.sockets.in(socket.room).emit('updatechat', socket.user.username, data);

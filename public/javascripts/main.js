@@ -47,11 +47,11 @@ $(document).ready(function(){
     });
 
 
-    socket.on('mappack', function(mapPack,isAdmin,usersLength,id){
-        game = new Game(mapPack,isAdmin,usersLength,id);
+    socket.on('mappack', function(mapPack,isAdmin,id){
+        game = new Game(mapPack,isAdmin,id);
         game.start();
-        if(game.playersLoc == null)
-            game.makePlayersMap();
+        if(isAdmin && mapPack.playersLoc.length == 0)
+            game.makePlayersMap(socket);
     });
 
     socket.on('userToPlace', function(id,username){
@@ -67,20 +67,26 @@ $(document).ready(function(){
         game.redrawPlayers(0,0);
     });
 
-    socket.on('adminNewPlayerAdded', function(data,id){
+    socket.on('adminNewPlayerAdded', function(data,id,x,y){
         if (!game.adm){
-            game.players.push(new Player(id));
+            game.players.push(new Player(id,x,y));
             game.playersLoc = data;
             game.redrawPlayers(0,0);
         }
-        else
-            game.redrawPlayers(0,0);
+    });
+
+    socket.on('makeCurrentUsers', function(data){
+        game.makeLocalPlayers(data);
     });
 
     $(document).on('click','.s',function(){
         var id = $(this).parent().attr('id');
-        socket.emit('adminAddNewPlayer',game.adminAddNewPlayer(id,$('#x'+id).val(),$('#y'+id).val()),id);
-        game.redrawPlayers(0,0);
+        var x = $('#x'+id).val();
+        var y = $('#y'+id).val();
+        if (game.adminAddNewPlayer(id,x,y))
+            socket.emit('adminAddNewPlayer',game.playersLoc,id,x,y);
+        else
+            //tutaj info ze jest juz na tej pozycji ktos
         $('#'+id).remove();
     });
 
