@@ -67,7 +67,6 @@ io.set('authorization', function (handshakeData, accept) {
 io.sockets.on('connection', function (socket) {
 
     socket.on('adduser', function(username, roomId){
-        //console.log(socket.handshake.cookie['username']);
         var parsedRoomNumber = parseInt(roomId);
         var connect = function(id, user, room) {
             socket.user = user;
@@ -76,6 +75,10 @@ io.sockets.on('connection', function (socket) {
             socket.emit('mappack', room.mapPack,user.isAdmin,id);
             socket.emit('makeCurrentUsers',room.users);
             if (user.isAdmin){
+                for(var i=1;i<room.users.length;i++){
+                    if(!room.users[i].isPlaced)
+                        socket.emit('userToPlace',id,room.users[i].username);
+                }
                 socket.broadcast.to(socket.room).emit('updatechat', 'ADMIN ' + user.username,' has connected to this room');
                 socket.emit('updatechat', 'SERVER', 'you have connected to '+ socket.room);
             }
@@ -98,6 +101,10 @@ io.sockets.on('connection', function (socket) {
                     socket.emit('roomdoesnotexists');
                     socket.disconnect();
                 }
+                else if(room.users.length == room.maxPlayers){
+                    socket.emit('roomFull');
+                    socket.disconnect();
+                }
                 else {
                     for(var i = 0;i<room.users.length;i++){
                         if(typeof(room.users[i].username) != undefined && room.users[i].username == username){
@@ -105,6 +112,7 @@ io.sockets.on('connection', function (socket) {
                             break;
                         }
                         if(i==room.users.length-1){
+                            console.log(username);
                             models.Room.findOneAndUpdate({roomId: roomId},{$push: {users: {username: username}}},function(err, room){
                                 if(err){
                                     console.log(err);
@@ -153,26 +161,31 @@ io.sockets.on('connection', function (socket) {
         });
     });
 
-    socket.on('adminAddNewPlayer', function(data,id,x,y){
+    socket.on('adminAddNewPlayer', function(data,id,x,y,usr){
         var query = {};
-        query["users."+id.toString()] = {x: x, y: y, isPlaced: true};
-        models.Room.findOneAndUpdate({roomId: socket.room}, {$unset: {"mapPack.playersLoc": []}, $set: query},function(err,a){if(err)console.log(err);console.log(a);});
+        query["users."+id.toString()] = {username: usr, x: x, y: y, isPlaced: true};
+        models.Room.findOneAndUpdate({roomId: socket.room}, {$unset: {"mapPack.playersLoc": []}, $set: query},function(err){if(err)console.log(err);});
         models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": data}},{upsert: true}, function(err){if(err) console.log(err);});
         socket.broadcast.to(socket.room).emit('adminNewPlayerAdded', data, id, x, y);
     });
 
-    socket.on('changePlayerPos', function(pm){
-        socket.broadcast.to(socket.room).emit('playerLocUpdate', pm);
+    socket.on('changePlayerPos', function(id,x,y,pm){
+        var query = {};
+        query["users."+id.toString()+".x"] = x;
+        query["users."+id.toString()+".y"] = y;
+        models.Room.findOneAndUpdate({roomId: socket.room}, {$unset: {"mapPack.playersLoc": []}, $set: query},function(err){if(err)console.log(err);});
+        models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": pm}},function(err){if(err)console.log(err);});
+        socket.broadcast.to(socket.room).emit('playerLocUpdate', id,x,y,pm);
     });
 
     socket.on('givePlayerMove', function(id,moves){
-
+        socket.broadcast.to(socket.room).emit('receiveMove',id,moves);
     });
 
-//    socket.on('updatedPlayersLocation', function(playerMap){
-//        models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": playerMap}},function(err){if(err)console.log(err);});
-//        socket.broadcast.to(socket.room).emit('updatePlayersLocation', playerMap);
-//    });
+    socket.on('updatedPlayersLocation', function(playerMap){
+        models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": playerMap}},function(err){if(err)console.log(err);});
+        socket.broadcast.to(socket.room).emit('updatePlayersLocation', playerMap);
+    });
 
     socket.on('sendchat', function (data) {
         io.sockets.in(socket.room).emit('updatechat', socket.user.username, data);

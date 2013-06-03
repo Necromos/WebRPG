@@ -187,6 +187,7 @@ var Game = Class.extend({
     isTurn: false,
 
     init: function(mapDocument,isAdmin,id){
+        this.uid = id;
         this.canvas = $('#mainCanvas')[0];
         this.canvas.width = 640;
         this.canvas.height = 384;
@@ -199,7 +200,6 @@ var Game = Class.extend({
         this.playerCtx = this.playerCanvas.getContext('2d');
         this.map = new Map(this.ctx,mapDocument);
         this.adm = isAdmin;
-        this.uid = id;
         this.playersLoc = mapDocument.playersLoc;
         var that = this;
         this.img.onload = function(){
@@ -211,7 +211,7 @@ var Game = Class.extend({
 
     makeLocalPlayers: function(users){
         for(var i = 0;i<users.length;i++){
-            this.players.push(new Player(i,users[i].x, users[i].y));
+            this.players.push(new Player(i,parseInt(users[i].x), parseInt(users[i].y)));
         }
     },
 
@@ -228,11 +228,21 @@ var Game = Class.extend({
         socket.emit('updatedPlayersLocation',this.playersLoc);
     },
 
+    rebuildPlayers: function(id,x,y,pm){
+        if (id = this.uid)
+            return;
+        this.playersLoc = pm;
+        this.players[id].x = x;
+        this.players[id].y = y;
+        this.playerCtx.clearRect(0, 0, 640, 384);
+        this.drawPlayers(this.x,this.y);
+    },
+
     adminAddNewPlayer: function(id,x,y) {
         if (this.playersLoc[y][x] == 0){
             this.playersLoc[y][x] = id;
             this.players.push(new Player(id,x,y));
-            this.redrawPlayers(0,0);
+            this.drawPlayers(this.x,this.y);
             return true
         }
         else {
@@ -240,13 +250,21 @@ var Game = Class.extend({
         }
     },
 
-    movePlayer: function(x,y){
+    movePlayer: function(x,y,socket){
+        console.log(x + " " + y);
+        console.log(this.x + " " + this.y);
+        console.log((x+this.x) + " " + (y+this.y));
+        var newX = this.x+x;
+        var newY = this.y+y;
         this.playersLoc[this.players[this.uid].y][this.players[this.uid].x] = 0;
-        this.players[this.uid].x = x;
-        this.players[this.uid].y = y;
-        this.playersLoc[y][x] = 1;
-        this.redrawPlayers(0,0);
+        this.players[this.uid].x = newX;
+        this.players[this.uid].y = newY;
+        this.playersLoc[newY][newX] = 1;
+        console.log(this.playersLoc);
+        this.playerCtx.clearRect(0, 0, 640, 384);
+        this.drawPlayers(this.map.x,this.map.y);
         this.moves--;
+        socket.emit('changePlayerPos',this.uid,newX,newY,this.playersLoc);
     },
 
     drawPlayers: function(x,y){
@@ -255,6 +273,7 @@ var Game = Class.extend({
         for (var i = y; i<y+3;i++){
             for(var j = x; j<x+5;j++){
                 if (this.playersLoc[i][j] != 0){
+                    console.log(x + " " + y + " " + this.playersLoc[i][j]);
                     for (var k = 0; k<this.players.length;k++){
                         if(this.playersLoc[i][j] == this.players[k].id){
                             c.drawImage(this.img,locX,locY);
@@ -278,8 +297,11 @@ var Game = Class.extend({
         this.drawPlayers(this.x,this.y);
     },
 
-    listen: function(){
+    listen: function(socket){
         var that = this;
+        var sc = socket;
+        var x;
+        var y;
         $('#left').click(function(){
             that.map.redrawMap(-1,0);
             that.redrawPlayers(-1,0);
@@ -296,8 +318,6 @@ var Game = Class.extend({
             that.map.redrawMap(0,-1);
             that.redrawPlayers(0,-1);
         });
-        var x;
-        var y;
         $('#playerCanvas').click(function(e){
             x = Math.floor((e.pageX - $(this).offset().left)/128);
             y = Math.floor((e.pageY - $(this).offset().top)/128);
@@ -308,7 +328,11 @@ var Game = Class.extend({
 
         });
         $(document).on('click','#move',function(e){
-            that.movePlayer(x,y);
+            that.movePlayer(x,y,sc);
+            $('#pop').remove();
+        });
+        $(document).on('click','#giveIt',function(){
+            socket.emit('givePlayerMove',$('#to').val(),$('#howMuch').val());
         });
     },
 
@@ -324,8 +348,18 @@ var Game = Class.extend({
         }
     },
 
-    start: function(){
-        this.listen();
+    makeAdmin: function(){
+        var np = $('<div>').attr('id', "giveMove");
+        $('<input>').attr('id','to').attr('type','text').css('width','50px').appendTo(np);
+        $('<input>').attr('id','howMuch').attr('type','text').css('width','50px').appendTo(np);
+        $('<button>').attr('id','giveIt').attr('type','button').css('width','50px').text("Give move").appendTo(np);
+        np.appendTo('#adminWrapper');
+    },
+
+    start: function(socket){
+        this.listen(socket);
+        if (this.adm)
+            this.makeAdmin();
         //this.drawPlayers(0,0);
     }
 });

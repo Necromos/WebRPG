@@ -49,7 +49,7 @@ $(document).ready(function(){
 
     socket.on('mappack', function(mapPack,isAdmin,id){
         game = new Game(mapPack,isAdmin,id);
-        game.start();
+        game.start(socket);
         if(isAdmin && mapPack.playersLoc.length == 0)
             game.makePlayersMap(socket);
     });
@@ -62,15 +62,17 @@ $(document).ready(function(){
         np.appendTo('#adminWrapper');
     });
 
-    socket.on('playerLocUpdate', function(data){
-        game.playersLoc = data;
-        game.redrawPlayers(0,0);
-    });
-
     socket.on('adminNewPlayerAdded', function(data,id,x,y){
         if (!game.adm){
-            game.players.push(new Player(id,x,y));
+            if (game.uid == id) {
+                game.players[id].x = x;
+                game.players[id].y = y;
+            }
+            else
+                game.players.push(new Player(id,x,y));
             game.playersLoc = data;
+            console.log(game.players);
+            console.log(game.playersLoc);
             game.redrawPlayers(0,0);
         }
     });
@@ -79,15 +81,27 @@ $(document).ready(function(){
         game.makeLocalPlayers(data);
     });
 
+    socket.on('playerLocUpdate', function(id,x,y,pm){
+        game.rebuildPlayers(id,x,y,pm);
+    });
+
+    socket.on('receiveMove', function(id,moves){
+        if(id == game.uid)
+            game.moves = moves;
+    });
+
     $(document).on('click','.s',function(){
-        var id = $(this).parent().attr('id');
-        var x = $('#x'+id).val();
-        var y = $('#y'+id).val();
-        if (game.adminAddNewPlayer(id,x,y))
-            socket.emit('adminAddNewPlayer',game.playersLoc,id,x,y);
-        else
+        var id = parseInt($(this).parent().attr('id'));
+        var x = parseInt($('#x'+id).val());
+        var y = parseInt($('#y'+id).val());
+        var usr = $('#s'+id).text();
+        if (game.adminAddNewPlayer(id,x,y)) {
+            socket.emit('adminAddNewPlayer',game.playersLoc,id,x,y,usr);
+            $('#'+id).remove();
+        }
+
             //tutaj info ze jest juz na tej pozycji ktos
-        $('#'+id).remove();
+
     });
 
     $('#chatSend').keypress(function(e) {
