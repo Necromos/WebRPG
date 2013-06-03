@@ -3,7 +3,7 @@
   padding: 0;
 }
 body {
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font-family: 'Purple Purse', cursive;
   text-align: center;
   height: 100%;
 }
@@ -17,18 +17,70 @@ body {
   width: 900px;
   height: 100%;
 }
-a {
-  color: #00B7FF;
+#content #main {
+  position: absolute;
+  width: 690px;
+  height: 434px;
+  margin: 0 auto;
 }
-#adminWrapper {
+#content #main #left {
+  left: 0px;
+}
+#content #main #right {
+  right: 0px;
+}
+#content #main #top {
+  top: 0px;
+}
+#content #main #bottom {
+  bottom: 0px;
+}
+#content #main .charMoveX {
+  position: absolute;
+  top: 25px;
+  height: 384px;
+  width: 25px;
+}
+#content #main .charMoveY {
+  position: absolute;
+  left: 25px;
+  width: 640px;
+  height: 25px;
+}
+#content #main #gameWrapper {
+  position: absolute;
+  width: 690px;
+  height: 434px;
+  top: 0px;
+  left: 0px;
+}
+#content #main canvas {
+  position: absolute;
+  left: 25px;
+  top: 25px;
+  width: 640px;
+  height: 384px;
+}
+#content #main #mainCanvas {
+  z-index: 1;
+}
+#content #main #playerCanvas {
+  z-index: 10;
+}
+#content #adminWrapper {
   position: absolute;
   right: 0;
   top: 0;
   width: 200px;
 }
+#content #adminWrapper input {
+  width: 50px;
+}
+a {
+  color: #00B7FF;
+}
 #popup {
   width: 200px;
-  height: 100px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -36,4 +88,5 @@ a {
   /* [-(height/2)px 0 0 -(width/2)px] */
 
   display: none;
+  z-index: 99999999;
 }

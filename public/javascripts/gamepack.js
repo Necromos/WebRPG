@@ -251,19 +251,21 @@ var Game = Class.extend({
     },
 
     movePlayer: function(x,y,socket){
-        console.log(x + " " + y);
-        console.log(this.x + " " + this.y);
-        console.log((x+this.x) + " " + (y+this.y));
         var newX = this.x+x;
         var newY = this.y+y;
         this.playersLoc[this.players[this.uid].y][this.players[this.uid].x] = 0;
         this.players[this.uid].x = newX;
         this.players[this.uid].y = newY;
         this.playersLoc[newY][newX] = 1;
-        console.log(this.playersLoc);
         this.playerCtx.clearRect(0, 0, 640, 384);
         this.drawPlayers(this.map.x,this.map.y);
         this.moves--;
+        console.log(this.moves);
+        console.log(this.moves == 0);
+        if (this.moves == 0){
+            console.log("hello?");
+            socket.emit('movesEnded');
+        }
         socket.emit('changePlayerPos',this.uid,newX,newY,this.playersLoc);
     },
 
@@ -273,7 +275,6 @@ var Game = Class.extend({
         for (var i = y; i<y+3;i++){
             for(var j = x; j<x+5;j++){
                 if (this.playersLoc[i][j] != 0){
-                    console.log(x + " " + y + " " + this.playersLoc[i][j]);
                     for (var k = 0; k<this.players.length;k++){
                         if(this.playersLoc[i][j] == this.players[k].id){
                             c.drawImage(this.img,locX,locY);
@@ -332,7 +333,8 @@ var Game = Class.extend({
             $('#pop').remove();
         });
         $(document).on('click','#giveIt',function(){
-            socket.emit('givePlayerMove',$('#to').val(),$('#howMuch').val());
+            socket.emit('givePlayerMove',parseInt($('#to').val()),parseInt($('#howMuch').val()));
+            $('#giveMove').fadeOut('slow');
         });
     },
 
@@ -350,10 +352,11 @@ var Game = Class.extend({
 
     makeAdmin: function(){
         var np = $('<div>').attr('id', "giveMove");
-        $('<input>').attr('id','to').attr('type','text').css('width','50px').appendTo(np);
-        $('<input>').attr('id','howMuch').attr('type','text').css('width','50px').appendTo(np);
-        $('<button>').attr('id','giveIt').attr('type','button').css('width','50px').text("Give move").appendTo(np);
+        $('<input>').attr('id','to').attr('type','text').appendTo($('<label>').text("UserID").appendTo(np));
+        $('<input>').attr('id','howMuch').attr('type','text').appendTo($('<label>').text("Moves").appendTo(np));
+        $('<button>').attr('id','giveIt').attr('type','button').text("Give move").appendTo(np);
         np.appendTo('#adminWrapper');
+        $('#adminWrapper').fadeIn('slow');
     },
 
     start: function(socket){

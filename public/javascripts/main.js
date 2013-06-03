@@ -77,6 +77,11 @@ $(document).ready(function(){
         }
     });
 
+    socket.on('turnFree', function(){
+        if(game.adm)
+            $('#giveMove').fadeIn('slow');
+    });
+
     socket.on('makeCurrentUsers', function(data){
         game.makeLocalPlayers(data);
     });

@@ -182,6 +182,11 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.to(socket.room).emit('receiveMove',id,moves);
     });
 
+    socket.on('movesEnded', function(){
+        console.log("idzie");
+        socket.broadcast.to(socket.room).emit('turnFree');
+    });
+
     socket.on('updatedPlayersLocation', function(playerMap){
         models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": playerMap}},function(err){if(err)console.log(err);});
         socket.broadcast.to(socket.room).emit('updatePlayersLocation', playerMap);
@@ -192,8 +197,8 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function(){
-        if (!socket.created){
-            socket.broadcast.emit('updatechat', 'SERVER', socket.user.username + ' has disconnected');
+        if (!socket.created && socket.user.username){
+            socket.broadcast.emit('updatechat',  socket.user.username, ' has disconnected');
             socket.leave(socket.room);
         }
         else {
