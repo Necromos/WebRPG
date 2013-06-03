@@ -1,4 +1,3 @@
-/* This file is only for schema purpose */
 var  mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , options = {
@@ -14,38 +13,38 @@ var  mongoose = require('mongoose')
         }
     };
 
-mongoose.connect("", options);
+mongoose.connect("mongodb://localhost:27017", options);
 
 var userSchema = new Schema({
 //    _id: Number,
     username: String,
-    currentHp: {type: Number, default: 10 },
-    maxHp: {type: Number, default: 10 },
-    moveLeft: { type: Number, default: 2 },
-    moveMax: { type: Number, default: 2 },
-    x: Number,
-    y: Number
+    isAdmin: { type: Boolean, default: false },
+    isPlaced: { type: Boolean, default: false },
+    currentHp: { type: Number, default: 10 },
+    maxHp: { type: Number, default: 10 },
+    x: { type: Number, default: 0 },
+    y: { type: Number, default: 0 }
 });
 
 var tileSchema = new Schema({
-//    _id: Number,
-    tid: Number,
     src: String,
-    x: Number,
-    y: Number,
-    isVisible: Boolean,
-    movePointCost: Number,
-//    monster: MonsterSchema,
-//    item: ItemSchema,
-    moveable: Boolean
+    movable: Boolean
+});
+
+var tilePosSchema = new Schema({
+    posX: Number,
+    posY: Number,
+    tile: Number
 });
 
 var mapSchema = new Schema({
 //    _id: Number,
     mapId: Number,
-    tilesInX: Number,
-    tilesInY: Number,
-    tiles: [tilePosSchema]
+    mapPack: String,
+    tiles: [tilePosSchema],
+    objects: [],
+    objLoc: [],
+    mapLoc: []
 });
 
 var roomSchema = new Schema({
@@ -53,21 +52,15 @@ var roomSchema = new Schema({
     roomId: Number,
     users: [userSchema],
     mapPack: {
-        mapId: Number,
-        tilesInX: Number,
-        tilesInY: Number,
-        tiles: [tilePosSchema]
+        mapPack: String,
+        tiles: [tileSchema],
+        objects: [],
+        objLoc: [],
+        mapLoc: [],
+        playersLoc: [Schema.Types.Mixed]
     },
-    currentMove: Number
+    maxPlayers: { type: Number, default: 4}
 });
-
-var tilePosSchema = new Schema({
-    posX: Number,
-    posY: Number,
-    tile: Number
-})
-
-
 
 var CounterSchema = new Schema({
     _id: String,
