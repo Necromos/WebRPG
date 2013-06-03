@@ -90,9 +90,10 @@ io.sockets.on('connection', function (socket) {
                 socket.broadcast.to(socket.room).emit('updatechat',  user.username,' has connected to this room');
             }
         };
-        if (username == null || username == "" || isNaN(parsedRoomNumber) || parsedRoomNumber < 1){
+        if (username == null || username == "" || isNaN(parsedRoomNumber) || parsedRoomNumber < 1 || parsedRoomNumber == "null"){
             socket.emit('roomnumbererror');
             socket.disconnect();
+            console.log("dc");
         }
         else {
             models.Room.findOne({ roomId: roomId }, function(err,room) {
@@ -187,6 +188,10 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.to(socket.room).emit('turnFree');
     });
 
+    socket.on('diceRolled', function(data){
+        io.sockets.in(socket.room).emit('updatechat', socket.user.username,"Rolled a d" + data + " dice and got: " + (Math.floor(Math.random()*data)));
+    });
+
     socket.on('updatedPlayersLocation', function(playerMap){
         models.Room.findOneAndUpdate({roomId: socket.room}, {$set: {"mapPack.playersLoc": playerMap}},function(err){if(err)console.log(err);});
         socket.broadcast.to(socket.room).emit('updatePlayersLocation', playerMap);
@@ -197,7 +202,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function(){
-        if (!socket.created && socket.user.username){
+        if (!socket.created && typeof(socket.user) != "undefined"){
             socket.broadcast.emit('updatechat',  socket.user.username, ' has disconnected');
             socket.leave(socket.room);
         }

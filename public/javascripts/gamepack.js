@@ -191,11 +191,9 @@ var Game = Class.extend({
         this.canvas = $('#mainCanvas')[0];
         this.canvas.width = 640;
         this.canvas.height = 384;
-        this.canvas.zIndex = 1;
         this.playerCanvas = $('#playerCanvas')[0];
         this.playerCanvas.width = 640;
         this.playerCanvas.height = 384;
-        this.playerCanvas.zIndex = 100;
         this.ctx = this.canvas.getContext('2d');
         this.playerCtx = this.playerCanvas.getContext('2d');
         this.map = new Map(this.ctx,mapDocument);
@@ -351,12 +349,14 @@ var Game = Class.extend({
     },
 
     makeAdmin: function(){
+        if($('#giveMove'))
+            $('#giveMove').remove();
         var np = $('<div>').attr('id', "giveMove");
         $('<input>').attr('id','to').attr('type','text').appendTo($('<label>').text("UserID").appendTo(np));
         $('<input>').attr('id','howMuch').attr('type','text').appendTo($('<label>').text("Moves").appendTo(np));
         $('<button>').attr('id','giveIt').attr('type','button').text("Give move").appendTo(np);
         np.appendTo('#adminWrapper');
-        $('#adminWrapper').fadeIn('slow');
+        $('#giveMove').fadeIn('slow');
     },
 
     start: function(socket){

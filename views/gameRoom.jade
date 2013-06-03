@@ -4,7 +4,6 @@ html
     title= title
     link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Purple+Purse&subset=latin,latin-ext')
     link(rel='stylesheet', href='/stylesheets/style.css')
-    link(rel='stylesheet', href='/stylesheets/chat.css')
     script(src='http://code.jquery.com/jquery-1.9.1.min.js')
     script(src='/socket.io/socket.io.js')
     script(src='/javascripts/urlTaker.js')
@@ -22,12 +21,18 @@ html
             #main
                 #gameWrapper
                     #left.charMoveX
+                        canvas#l
                     #right.charMoveX
+                        canvas#r
                     #top.charMoveY
+                        canvas#t
                     #bottom.charMoveY
+                        canvas#b
                     canvas#playerCanvas
                     canvas#mainCanvas
             #adminWrapper
+                label d
+                    input#diceWalls(type='text', autocomplete='off')
         footer
             #foot
                 #chat

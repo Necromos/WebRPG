@@ -24,6 +24,78 @@ $(document).ready(function(){
         }
         return null;
     }
+
+    var ctxL = $('#l')[0];
+    var ctxR = $('#r')[0];
+    var ctxT = $('#t')[0];
+    var ctxB = $('#b')[0];
+
+    ctxL.width = 25;
+    ctxL.height = 384;
+    ctxL = ctxL.getContext('2d');
+    ctxR.width = 25;
+    ctxR.height = 384;
+    ctxR = ctxR.getContext('2d');
+    ctxT.width = 640;
+    ctxT.height = 25;
+    ctxT = ctxT.getContext('2d');
+    ctxB.width = 640;
+    ctxB.height = 25;
+    ctxB = ctxB.getContext('2d');
+
+    var makeL = function () {
+        ctxL.beginPath();
+        ctxL.moveTo(5,192);
+        ctxL.lineTo(20,172);
+        ctxL.lineTo(20,212);
+        ctxL.closePath();
+        ctxL.fillStyle = "rgba(255,150,50,0.5)";
+        ctxL.fill();
+        ctxL.strokeStyle = "red";
+        ctxL.lineWidth = 2.0;
+        ctxL.stroke();
+    }();
+
+    var makeR = function () {
+        ctxR.beginPath();
+        ctxR.moveTo(20,192);
+        ctxR.lineTo(5,172);
+        ctxR.lineTo(5,212);
+        ctxR.closePath();
+        ctxR.fillStyle = "rgba(255,150,50,0.5)";
+        ctxR.fill();
+        ctxR.strokeStyle = "red";
+        ctxR.lineWidth = 2.0;
+        ctxR.stroke();
+    }();
+
+    var makeT = function () {
+        ctxT.beginPath();
+        ctxT.moveTo(320,5);
+        ctxT.lineTo(300,20);
+        ctxT.lineTo(340,20);
+        ctxT.closePath();
+        ctxT.fillStyle = "rgba(255,150,50,0.5)";
+        ctxT.fill();
+        ctxT.strokeStyle = "red";
+        ctxT.lineWidth = 2.0;
+        ctxT.stroke();
+    }();
+
+    var makeB = function () {
+        ctxB.beginPath();
+        ctxB.moveTo(320,20);
+        ctxB.lineTo(300,5);
+        ctxB.lineTo(340,5);
+        ctxB.closePath();
+        ctxB.fillStyle = "rgba(255,150,50,0.5)";
+        ctxB.fill();
+        ctxB.strokeStyle = "red";
+        ctxB.lineWidth = 2.0;
+        ctxB.stroke();
+    }();
+
+
 // Socket listeners
     socket.on('connect', function(){
         var username = readCookie("username");
@@ -79,7 +151,7 @@ $(document).ready(function(){
 
     socket.on('turnFree', function(){
         if(game.adm)
-            $('#giveMove').fadeIn('slow');
+            $('#giveMove').fadeIn('slow')
     });
 
     socket.on('makeCurrentUsers', function(data){
@@ -104,9 +176,16 @@ $(document).ready(function(){
             socket.emit('adminAddNewPlayer',game.playersLoc,id,x,y,usr);
             $('#'+id).remove();
         }
-
             //tutaj info ze jest juz na tej pozycji ktos
-
+    });
+    $('#diceWalls').keypress(function(e){
+        if(e.which == 13) {
+            var message = $(this).val();
+            $(this).val('');
+            socket.emit('diceRolled',message);
+            $(this).blur();
+            $('#chatSend').focus();
+        }
     });
 
     $('#chatSend').keypress(function(e) {
