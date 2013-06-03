@@ -90,6 +90,10 @@ body {
 }
 #content #adminWrapper #giveMove {
   display: none;
+  width: 200px;
+}
+#content #adminWrapper #giveMove input {
+  width: 170px;
 }
 #content #adminWrapper input {
   width: 50px;
